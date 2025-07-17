@@ -7,11 +7,18 @@ import { QuestionsModule } from './questions/questions.module';
 import { AnswersModule } from './answers/answers.module';
 import { VotesModule } from './votes/votes.module';
 import { AuthModule } from './auth/auth.module';
-
+import { PrismaService } from './prisma.service';
 
 @Module({
-  imports: [UsersModule, TagsModule, QuestionsModule, AnswersModule, VotesModule, AuthModule],
+  imports: [
+    UsersModule,
+    TagsModule,
+    QuestionsModule,
+    AnswersModule,
+    VotesModule,
+    AuthModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}
