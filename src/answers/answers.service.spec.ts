@@ -6,6 +6,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 describe('AnswersService', () => {
   let service: AnswersService;
   let prisma: PrismaService;
+  const mockUser = { id: 1 };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,15 +59,15 @@ describe('AnswersService', () => {
   });
 
   describe('markCorrect', () => {
-    it('should mark answer as correct if found', async () => {
-      (prisma.answer.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
+    it('should mark answer as correct if found and user is owner', async () => {
+      (prisma.answer.findUnique as jest.Mock).mockResolvedValue({ id: 1, question: { userId: 1 } });
       (prisma.answer.update as jest.Mock).mockResolvedValue({ id: 1, isCorrect: true });
-      const result = await service.markCorrect(1);
+      const result = await service.markCorrect(1, mockUser);
       expect(result.isCorrect).toBe(true);
     });
     it('should throw NotFoundException if answer not found', async () => {
       (prisma.answer.findUnique as jest.Mock).mockResolvedValue(null);
-      await expect(service.markCorrect(1)).rejects.toThrow(NotFoundException);
+      await expect(service.markCorrect(1, mockUser)).rejects.toThrow(NotFoundException);
     });
   });
 

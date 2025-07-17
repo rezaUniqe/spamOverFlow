@@ -13,6 +13,7 @@ const mockQuestionsService = {
 describe('QuestionsController', () => {
   let controller: QuestionsController;
   let service: typeof mockQuestionsService;
+  const mockReq = { user: { id: 1 } };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -38,9 +39,9 @@ describe('QuestionsController', () => {
       const dto: CreateQuestionDto = { title: 'Q', content: 'C', userId: 1 };
       const question = { id: 1, title: 'Q', content: 'C', userId: 1, createdAt: new Date() };
       service.createQuestion.mockResolvedValue(question);
-      const result = await controller.createQuestion(dto);
+      const result = await controller.createQuestion(dto, mockReq);
       expect(result).toEqual(question);
-      expect(service.createQuestion).toHaveBeenCalledWith(dto);
+      expect(service.createQuestion).toHaveBeenCalledWith({ ...dto, userId: mockReq.user.id });
     });
   });
 
