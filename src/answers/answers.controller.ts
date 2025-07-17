@@ -34,4 +34,10 @@ export class AnswersController {
     // Use user id from JWT
     return this.answersService.vote(Number(id), { userId: req.user.id, value: data.value });
   }
+
+  @Get(':id/vote-status')
+  @UseGuards(AuthGuard('jwt'))
+  async getVoteStatus(@Param('id') id: number, @Req() req) {
+    return this.answersService.getAnswerWithVoteStatus(Number(id), req.user.id);
+  }
 }

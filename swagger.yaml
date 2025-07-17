@@ -1,0 +1,395 @@
+openapi: 3.0.0
+info:
+  title: Q&A Platform API
+  version: 1.0.0
+  description: REST API for a StackOverflow-like Q&A platform
+servers:
+  - url: http://localhost:3000
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSimple'
+  /auth/login:
+    post:
+      summary: Login and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtResponse'
+  /users:
+    post:
+      summary: Create user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    get:
+      summary: List all users
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /tags:
+    post:
+      summary: Create tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagCreate'
+      responses:
+        '201':
+          description: Tag created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+    get:
+      summary: List all tags
+      responses:
+        '200':
+          description: List of tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+  /questions:
+    post:
+      summary: Create question
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionCreate'
+      responses:
+        '201':
+          description: Question created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+    get:
+      summary: Get all questions with pagination and tag filter
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: tag
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+  /questions/{id}:
+    get:
+      summary: Get a single question with number of answers
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Question with answer count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionWithAnswersCount'
+  /questions/{id}/tags:
+    post:
+      summary: Assign tags to a question
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagIds:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Tags assigned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  /answers/questions/{id}/answers:
+    post:
+      summary: Answer a question
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerCreate'
+      responses:
+        '201':
+          description: Answer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerWithVoteStatus'
+  /answers/{id}/mark-correct:
+    patch:
+      summary: Mark answer as correct
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Answer marked as correct
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerWithVoteStatus'
+  /answers/{id}/statistics:
+    get:
+      summary: Get answer stats (total votes)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Answer statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalVotes:
+                    type: integer
+  /answers/{id}/vote:
+    post:
+      summary: Vote on an answer
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: integer
+                  enum: [1, -1]
+      responses:
+        '200':
+          description: Vote registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerWithVoteStatus'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    JwtResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    UserSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserSimple'
+        - type: object
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+    TagCreate:
+      type: object
+      properties:
+        name:
+          type: string
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    QuestionCreate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        userId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+    QuestionWithAnswersCount:
+      allOf:
+        - $ref: '#/components/schemas/Question'
+        - type: object
+          properties:
+            answersCount:
+              type: integer
+    AnswerCreate:
+      type: object
+      properties:
+        content:
+          type: string
+    Answer:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        questionId:
+          type: integer
+        userId:
+          type: integer
+        isCorrect:
+          type: boolean
+        correct:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    AnswerWithVoteStatus:
+      allOf:
+        - $ref: '#/components/schemas/Answer'
+        - type: object
+          properties:
+            hasVoted:
+              type: boolean 

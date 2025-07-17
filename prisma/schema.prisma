@@ -44,6 +44,7 @@ model Answer {
   user       User     @relation(fields: [userId], references: [id])
   userId     Int
   isCorrect  Boolean  @default(false)
+  correct    Boolean  @default(false)
   votes      Vote[]
   createdAt  DateTime @default(now())
 }

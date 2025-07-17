@@ -14,7 +14,7 @@ export class AnswersService {
     // Check if user exists
     const user = await this.prisma.user.findUnique({ where: { id: data.userId } });
     if (!user) throw new BadRequestException('User does not exist');
-    return this.prisma.answer.create({ data: { ...data, questionId } });
+    return this.prisma.answer.create({ data: { ...data, questionId, correct: false } });
   }
 
   async markCorrect(id: number, user: any): Promise<Answer> {
@@ -47,5 +47,15 @@ export class AnswersService {
       update: { value: data.value },
       create: { userId: data.userId, answerId: id, value: data.value },
     });
+  }
+
+  async getAnswerWithVoteStatus(answerId: number, userId: number) {
+    const answer = await this.prisma.answer.findUnique({ where: { id: answerId } });
+    if (!answer) throw new NotFoundException('Answer not found');
+    const vote = await this.prisma.vote.findUnique({ where: { userId_answerId: { userId, answerId } } });
+    return {
+      ...answer,
+      hasVoted: !!vote,
+    };
   }
 }
