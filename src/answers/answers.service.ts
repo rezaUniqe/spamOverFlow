@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { Answer } from './interfaces/answer.interface';
@@ -11,31 +7,25 @@ import { Answer } from './interfaces/answer.interface';
 export class AnswersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createAnswer(
-    questionId: number,
-    data: CreateAnswerDto,
-  ): Promise<Answer> {
+  async createAnswer(questionId: number, data: CreateAnswerDto): Promise<Answer> {
     // Check if question exists
-    const question = await this.prisma.question.findUnique({
-      where: { id: questionId },
-    });
+    const question = await this.prisma.question.findUnique({ where: { id: questionId } });
     if (!question) throw new NotFoundException('Question not found');
     // Check if user exists
-    const user = await this.prisma.user.findUnique({
-      where: { id: data.userId },
-    });
+    const user = await this.prisma.user.findUnique({ where: { id: data.userId } });
     if (!user) throw new BadRequestException('User does not exist');
     return this.prisma.answer.create({ data: { ...data, questionId } });
   }
 
-  async markCorrect(id: number): Promise<Answer> {
+  async markCorrect(id: number, user: any): Promise<Answer> {
     // Check if answer exists
-    const answer = await this.prisma.answer.findUnique({ where: { id } });
+    const answer = await this.prisma.answer.findUnique({ where: { id }, include: { question: true } });
     if (!answer) throw new NotFoundException('Answer not found');
-    return this.prisma.answer.update({
-      where: { id },
-      data: { isCorrect: true },
-    });
+    // Only question owner can mark as correct
+    if (answer.question.userId !== user.id) {
+      throw new ForbiddenException('Only the question owner can mark an answer as correct');
+    }
+    return this.prisma.answer.update({ where: { id }, data: { isCorrect: true } });
   }
 
   async getStatistics(id: number) {
@@ -49,9 +39,7 @@ export class AnswersService {
     const answer = await this.prisma.answer.findUnique({ where: { id } });
     if (!answer) throw new NotFoundException('Answer not found');
     // Check if user exists
-    const user = await this.prisma.user.findUnique({
-      where: { id: data.userId },
-    });
+    const user = await this.prisma.user.findUnique({ where: { id: data.userId } });
     if (!user) throw new BadRequestException('User does not exist');
     // value: 1 for upvote, -1 for downvote
     return this.prisma.vote.upsert({

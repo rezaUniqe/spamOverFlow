@@ -33,8 +33,16 @@ describe('UsersController', () => {
 
   describe('createUser', () => {
     it('should call UsersService.createUser with correct data', async () => {
-      const dto: CreateUserDto = { email: 'test@example.com', password: 'secret' };
-      const user = { id: 1, email: 'test@example.com', password: 'secret', createdAt: new Date() };
+      const dto: CreateUserDto = {
+        email: 'test@example.com',
+        password: 'secret',
+      };
+      const user = {
+        id: 1,
+        email: 'test@example.com',
+        password: 'secret',
+        createdAt: new Date(),
+      };
       service.createUser.mockResolvedValue(user);
       const result = await controller.createUser(dto);
       expect(result).toEqual(user);
