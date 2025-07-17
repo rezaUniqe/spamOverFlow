@@ -1,4 +1,0 @@
-# Use the official PostgreSQL image from Docker Hub
-FROM postgres:15-alpine
-
-# No extra steps needed; configuration is handled via environment variables 
