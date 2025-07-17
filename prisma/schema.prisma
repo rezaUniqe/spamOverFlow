@@ -1,0 +1,70 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  questions Question[]
+  answers   Answer[]
+  votes     Vote[]
+  createdAt DateTime  @default(now())
+}
+
+model Tag {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  questions QuestionTag[]
+}
+
+model Question {
+  id        Int        @id @default(autoincrement())
+  title     String
+  content   String
+  user      User       @relation(fields: [userId], references: [id])
+  userId    Int
+  answers   Answer[]
+  tags      QuestionTag[]
+  createdAt DateTime   @default(now())
+}
+
+model Answer {
+  id         Int      @id @default(autoincrement())
+  content    String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId Int
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  isCorrect  Boolean  @default(false)
+  votes      Vote[]
+  createdAt  DateTime @default(now())
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  value     Int      // 1 for upvote, -1 for downvote
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  answer    Answer   @relation(fields: [answerId], references: [id])
+  answerId  Int
+  createdAt DateTime @default(now())
+  @@unique([userId, answerId])
+}
+
+// Many-to-many relation between Question and Tag
+model QuestionTag {
+  id         Int      @id @default(autoincrement())
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId Int
+  tag        Tag      @relation(fields: [tagId], references: [id])
+  tagId      Int
+  @@unique([questionId, tagId])
+}
