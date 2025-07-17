@@ -39,19 +39,32 @@ describe('UsersService', () => {
   describe('createUser', () => {
     it('should create a user if email is not taken', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.user.create as jest.Mock).mockResolvedValue({ id: 1, email: 'test@example.com', password: 'secret', createdAt: new Date() });
+      (prisma.user.create as jest.Mock).mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+        password: 'secret',
+        createdAt: new Date(),
+      });
 
-      const result = await service.createUser({ email: 'test@example.com', password: 'secret' });
+      const result = await service.createUser({
+        email: 'test@example.com',
+        password: 'secret',
+      });
       expect(result.email).toBe('test@example.com');
-      expect(prisma.user.create).toHaveBeenCalledWith({ data: { email: 'test@example.com', password: 'secret' } });
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: { email: 'test@example.com', password: 'secret' },
+      });
     });
 
     it('should throw BadRequestException if email is already in use', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 1, email: 'test@example.com' });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+      });
 
-      await expect(service.createUser({ email: 'test@example.com', password: 'secret' }))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(
+        service.createUser({ email: 'test@example.com', password: 'secret' }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

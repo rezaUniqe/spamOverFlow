@@ -43,37 +43,60 @@ describe('AnswersService', () => {
     it('should create answer if question and user exist', async () => {
       (prisma.question.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
-      (prisma.answer.create as jest.Mock).mockResolvedValue({ id: 1, content: 'A', questionId: 1, userId: 1, isCorrect: false, createdAt: new Date() });
+      (prisma.answer.create as jest.Mock).mockResolvedValue({
+        id: 1,
+        content: 'A',
+        questionId: 1,
+        userId: 1,
+        isCorrect: false,
+        createdAt: new Date(),
+      });
       const result = await service.createAnswer(1, { content: 'A', userId: 1 });
       expect(result.content).toBe('A');
     });
     it('should throw NotFoundException if question not found', async () => {
       (prisma.question.findUnique as jest.Mock).mockResolvedValue(null);
-      await expect(service.createAnswer(1, { content: 'A', userId: 1 })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.createAnswer(1, { content: 'A', userId: 1 }),
+      ).rejects.toThrow(NotFoundException);
     });
     it('should throw BadRequestException if user not found', async () => {
       (prisma.question.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      await expect(service.createAnswer(1, { content: 'A', userId: 1 })).rejects.toThrow(BadRequestException);
+      await expect(
+        service.createAnswer(1, { content: 'A', userId: 1 }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('markCorrect', () => {
     it('should mark answer as correct if found and user is owner', async () => {
-      (prisma.answer.findUnique as jest.Mock).mockResolvedValue({ id: 1, question: { userId: 1 } });
-      (prisma.answer.update as jest.Mock).mockResolvedValue({ id: 1, isCorrect: true });
+      (prisma.answer.findUnique as jest.Mock).mockResolvedValue({
+        id: 1,
+        question: { userId: 1 },
+      });
+      (prisma.answer.update as jest.Mock).mockResolvedValue({
+        id: 1,
+        isCorrect: true,
+      });
       const result = await service.markCorrect(1, mockUser);
       expect(result.isCorrect).toBe(true);
     });
     it('should throw NotFoundException if answer not found', async () => {
       (prisma.answer.findUnique as jest.Mock).mockResolvedValue(null);
-      await expect(service.markCorrect(1, mockUser)).rejects.toThrow(NotFoundException);
+      await expect(service.markCorrect(1, mockUser)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('getStatistics', () => {
     it('should return total votes', async () => {
-      (prisma.vote.findMany as jest.Mock).mockResolvedValue([{ value: 1 }, { value: -1 }, { value: 1 }]);
+      (prisma.vote.findMany as jest.Mock).mockResolvedValue([
+        { value: 1 },
+        { value: -1 },
+        { value: 1 },
+      ]);
       const result = await service.getStatistics(1);
       expect(result.totalVotes).toBe(1);
     });
@@ -89,12 +112,16 @@ describe('AnswersService', () => {
     });
     it('should throw NotFoundException if answer not found', async () => {
       (prisma.answer.findUnique as jest.Mock).mockResolvedValue(null);
-      await expect(service.vote(1, { userId: 1, value: 1 })).rejects.toThrow(NotFoundException);
+      await expect(service.vote(1, { userId: 1, value: 1 })).rejects.toThrow(
+        NotFoundException,
+      );
     });
     it('should throw BadRequestException if user not found', async () => {
       (prisma.answer.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      await expect(service.vote(1, { userId: 1, value: 1 })).rejects.toThrow(BadRequestException);
+      await expect(service.vote(1, { userId: 1, value: 1 })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

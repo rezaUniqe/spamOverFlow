@@ -35,19 +35,27 @@ describe('TagsService', () => {
   describe('createTag', () => {
     it('should create a tag if name is not taken', async () => {
       (prisma.tag.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.tag.create as jest.Mock).mockResolvedValue({ id: 1, name: 'nestjs' });
+      (prisma.tag.create as jest.Mock).mockResolvedValue({
+        id: 1,
+        name: 'nestjs',
+      });
 
       const result = await service.createTag({ name: 'nestjs' });
       expect(result.name).toBe('nestjs');
-      expect(prisma.tag.create).toHaveBeenCalledWith({ data: { name: 'nestjs' } });
+      expect(prisma.tag.create).toHaveBeenCalledWith({
+        data: { name: 'nestjs' },
+      });
     });
 
     it('should throw BadRequestException if tag already exists', async () => {
-      (prisma.tag.findUnique as jest.Mock).mockResolvedValue({ id: 1, name: 'nestjs' });
+      (prisma.tag.findUnique as jest.Mock).mockResolvedValue({
+        id: 1,
+        name: 'nestjs',
+      });
 
-      await expect(service.createTag({ name: 'nestjs' }))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(service.createTag({ name: 'nestjs' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

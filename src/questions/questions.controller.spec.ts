@@ -37,11 +37,20 @@ describe('QuestionsController', () => {
   describe('createQuestion', () => {
     it('should call QuestionsService.createQuestion with correct data', async () => {
       const dto: CreateQuestionDto = { title: 'Q', content: 'C', userId: 1 };
-      const question = { id: 1, title: 'Q', content: 'C', userId: 1, createdAt: new Date() };
+      const question = {
+        id: 1,
+        title: 'Q',
+        content: 'C',
+        userId: 1,
+        createdAt: new Date(),
+      };
       service.createQuestion.mockResolvedValue(question);
       const result = await controller.createQuestion(dto, mockReq);
       expect(result).toEqual(question);
-      expect(service.createQuestion).toHaveBeenCalledWith({ ...dto, userId: mockReq.user.id });
+      expect(service.createQuestion).toHaveBeenCalledWith({
+        ...dto,
+        userId: mockReq.user.id,
+      });
     });
   });
 
@@ -59,7 +68,14 @@ describe('QuestionsController', () => {
 
   describe('getQuestion', () => {
     it('should return a question', async () => {
-      const question = { id: 1, title: 'Q', content: 'C', userId: 1, createdAt: new Date(), answersCount: 0 };
+      const question = {
+        id: 1,
+        title: 'Q',
+        content: 'C',
+        userId: 1,
+        createdAt: new Date(),
+        answersCount: 0,
+      };
       service.getQuestion.mockResolvedValue(question);
       const result = await controller.getQuestion(1);
       expect(result).toEqual(question);

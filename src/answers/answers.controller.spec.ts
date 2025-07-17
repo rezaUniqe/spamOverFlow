@@ -37,11 +37,21 @@ describe('AnswersController', () => {
   describe('createAnswer', () => {
     it('should call AnswersService.createAnswer with correct data', async () => {
       const dto: CreateAnswerDto = { content: 'A', userId: 1 };
-      const answer = { id: 1, content: 'A', questionId: 1, userId: 1, isCorrect: false, createdAt: new Date() };
+      const answer = {
+        id: 1,
+        content: 'A',
+        questionId: 1,
+        userId: 1,
+        isCorrect: false,
+        createdAt: new Date(),
+      };
       service.createAnswer.mockResolvedValue(answer);
       const result = await controller.createAnswer(1, dto, mockReq);
       expect(result).toEqual(answer);
-      expect(service.createAnswer).toHaveBeenCalledWith(1, { ...dto, userId: mockReq.user.id });
+      expect(service.createAnswer).toHaveBeenCalledWith(1, {
+        ...dto,
+        userId: mockReq.user.id,
+      });
     });
   });
 
@@ -71,7 +81,10 @@ describe('AnswersController', () => {
       service.vote.mockResolvedValue(voteResult);
       const result = await controller.vote(1, { userId: 1, value: 1 }, mockReq);
       expect(result).toEqual(voteResult);
-      expect(service.vote).toHaveBeenCalledWith(1, { userId: mockReq.user.id, value: 1 });
+      expect(service.vote).toHaveBeenCalledWith(1, {
+        userId: mockReq.user.id,
+        value: 1,
+      });
     });
   });
 });
